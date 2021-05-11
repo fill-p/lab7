@@ -1,3 +1,4 @@
-drop table presents;
+drop table receive_info;
+drop table package_info;
 
-drop table worker;
+

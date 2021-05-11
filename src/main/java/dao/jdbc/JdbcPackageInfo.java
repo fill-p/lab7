@@ -2,8 +2,8 @@ package dao.jdbc;
 
 import dao.DaoException;
 import dao.DaoFactory;
-import dao.DaoPresent;
-import data.Present;
+import dao.DaoPackageInfo;
+import data.PackageInfo;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,35 +13,34 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class JdbcPresent implements DaoPresent {
+public class JdbcPackageInfo implements DaoPackageInfo {
 
     private final DaoFactory daoFactory = DaoFactory.getInstance();
 
-    private static final String CREATE_PRESENT = "insert into presents(worker_id,date,is_present) values(?,?,?);";
+    private static final String CREATE_PRESENT = "insert into package_info(sender,receiver) values(?,?);";
 
-    private static final String DELETE_PRESENT = "delete from presents " +
-            "where worker_id = ?;";
+    private static final String DELETE_PRESENT = "delete from package_info " +
+            "where id = ?;";
 
-    private static final String UPDATE_PRESENT = "update presents set " +
-            "date = ?," +
-            "is_present = ?" +
-            "where worker_id = ?;";
+    private static final String UPDATE_PRESENT = "update package_info set " +
+            "sender = ?," +
+            "receiver = ?" +
+            "where id = ?;";
 
-    private static final String FIND_PRESENT = "select * from presents;";
+    private static final String FIND_PRESENT = "select * from package_info;";
 
 
     @Override
-    public void create(Present present) throws DaoException {
+    public void create(PackageInfo packageInfo) throws DaoException {
         Connection connection = null;
         PreparedStatement statement = null;
         try {
             connection = daoFactory.getConnection();
             statement = connection.prepareStatement(CREATE_PRESENT);
-            statement.setLong(1, present.getWorkerId());
-            statement.setString(2, present.getDate());
-            statement.setBoolean(3, present.isPresent());
+            statement.setString(1, packageInfo.getSender());
+            statement.setString(2, packageInfo.getReceiver());
             if(statement.execute()){
-                throw new DaoException("Present was not created");
+                throw new DaoException("PackageInfo was not created");
             }
         } catch (DaoException | SQLException e){
             throw new DaoException(e.getMessage(),e);
@@ -60,15 +59,15 @@ public class JdbcPresent implements DaoPresent {
     }
 
     @Override
-    public void delete(Present present) throws DaoException {
+    public void delete(PackageInfo packageInfo) throws DaoException {
         Connection connection = null;
         PreparedStatement statement = null;
         try {
             connection = daoFactory.getConnection();
             statement = connection.prepareStatement(DELETE_PRESENT);
-            statement.setLong(1, present.getWorkerId());
+            statement.setLong(1, packageInfo.getId());
             if(statement.execute()){
-                throw new DaoException("Present was not deleted");
+                throw new DaoException("PackageInfo was not deleted");
             }
         } catch (DaoException | SQLException e){
             throw new DaoException(e.getMessage(),e);
@@ -87,17 +86,17 @@ public class JdbcPresent implements DaoPresent {
     }
 
     @Override
-    public void update(Present present) throws DaoException {
+    public void update(PackageInfo packageInfo) throws DaoException {
         Connection connection = null;
         PreparedStatement statement = null;
         try {
             connection = daoFactory.getConnection();
             statement = connection.prepareStatement(UPDATE_PRESENT);
-            statement.setString(1, present.getDate());
-            statement.setBoolean(2, present.isPresent());
-            statement.setLong(2, present.getWorkerId());
-            if(!statement.execute()){
-                throw new DaoException("Present was not updated");
+            statement.setString(1, packageInfo.getSender());
+            statement.setString(2, packageInfo.getReceiver());
+            statement.setLong(3, packageInfo.getId());
+            if(statement.execute()){
+                throw new DaoException("PackageInfo was not updated");
             }
         } catch (DaoException | SQLException e){
             throw new DaoException(e.getMessage(),e);
@@ -116,14 +115,14 @@ public class JdbcPresent implements DaoPresent {
     }
 
     @Override
-    public Optional<List<Present>> findAll() throws DaoException {
+    public Optional<List<PackageInfo>> findAll() throws DaoException {
         Connection connection = null;
         PreparedStatement statement = null;
-        List<Present> presentList;
+        List<PackageInfo> packageInfoList;
         try {
             connection = daoFactory.getConnection();
             statement = connection.prepareStatement(FIND_PRESENT);
-            presentList = readDataFromResultSet(statement.executeQuery());
+            packageInfoList = readDataFromResultSet(statement.executeQuery());
         } catch (DaoException | SQLException e){
             throw new DaoException(e.getMessage(),e);
         } finally {
@@ -138,22 +137,22 @@ public class JdbcPresent implements DaoPresent {
                 throw new DaoException("Cannot close connection",e);
             }
         }
-        return Optional.of(presentList);
+        return Optional.of(packageInfoList);
     }
 
-    private List<Present> readDataFromResultSet(ResultSet resultSet) throws DaoException {
-        List<Present> presentList = new ArrayList<>();
+    private List<PackageInfo> readDataFromResultSet(ResultSet resultSet) throws DaoException {
+        List<PackageInfo> packageInfoList = new ArrayList<>();
         try {
             while(resultSet.next()){
-                presentList.add(new Present(
-                        resultSet.getInt("worker_id"),
-                        resultSet.getString("date"),
-                        resultSet.getBoolean("is_present")
+                packageInfoList.add(new PackageInfo(
+                        resultSet.getInt("id"),
+                        resultSet.getString("sender"),
+                        resultSet.getString("receiver")
                 ));
             }
         } catch (SQLException e) {
             throw new DaoException("Reading from result set is failed",e);
         }
-        return presentList;
+        return packageInfoList;
     }
 }

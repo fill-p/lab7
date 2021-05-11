@@ -2,8 +2,10 @@ package dao.jdbc;
 
 import dao.DaoException;
 import dao.DaoFactory;
-import dao.DaoWorker;
-import data.Worker;
+import dao.DaoPackageInfo;
+import dao.DaoReceiveInfo;
+import data.PackageInfo;
+import data.ReceiveInfo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +22,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestJdbcWorker {
+public class TestJdbcReceiveInfo {
 
     private static final DaoFactory factory = DaoFactory.getInstance();
 
@@ -82,30 +84,49 @@ public class TestJdbcWorker {
     }
 
     @Test
-    void shouldNotThrowExceptionForCreatingWorker() {
-        assertDoesNotThrow(() -> new JdbcWorker().create(new Worker("Name","Surname")));
+    void shouldNotThrowExceptionForCreatingReceiveInfo() throws DaoException {
+        new JdbcPackageInfo().create(new PackageInfo("",""));
+        assertDoesNotThrow(() -> new JdbcReceiveInfo().create(new ReceiveInfo(1,"",true)));
     }
 
     @Test
-    void shouldThrowDaoExceptionForCreatingEmptyWorker() {
-        assertThrows(DaoException.class, () -> new JdbcWorker().create(new Worker()));
+    void shouldThrowDaoExceptionForCreatingEmptyReceiveInfo() {
+        assertThrows(DaoException.class, () -> new JdbcReceiveInfo().create(new ReceiveInfo()));
     }
 
     @Test
-    void shouldNotThrowDaoExceptionForDeletingWorker() throws DaoException {
-        new JdbcWorker().create(new Worker("",""));
-        assertDoesNotThrow(() -> new JdbcWorker().delete(new Worker(1,"","")));
+    void shouldThrowDaoExceptionForCreatingReceiveInfoWithoutExistingPackage() {
+        assertThrows(DaoException.class, () -> new JdbcReceiveInfo().create(new ReceiveInfo(1,"",true)));
     }
 
     @Test
-    void shouldShowAddedWorkers() throws DaoException {
-        DaoWorker daoWorker = new JdbcWorker();
-        List<Worker> expected = new ArrayList<>();
+    void shouldNotThrowDaoExceptionForDeletingReceiveInfo() throws DaoException {
+        new JdbcPackageInfo().create(new PackageInfo("",""));
+        assertDoesNotThrow(() -> new JdbcReceiveInfo().delete(new ReceiveInfo(1,"",true)));
+    }
+
+    @Test
+    void shouldNotThrowDaoExceptionForUpdatingReceiveInfoAndShowNewData() throws DaoException {
+        DaoReceiveInfo receiveInfo = new JdbcReceiveInfo();
+        new JdbcPackageInfo().create(new PackageInfo("",""));
+        receiveInfo.create(new ReceiveInfo(1,"",false));
+        assertDoesNotThrow(() -> receiveInfo.update(new ReceiveInfo(1,"",true)));
+        List<ReceiveInfo> expected = new ArrayList<>();
+        expected.add(new ReceiveInfo(1,"",true));
+        assertEquals(expected,receiveInfo.findAll().get());
+    }
+
+
+    @Test
+    void shouldShowAddedReceiveInfos() throws DaoException {
+        DaoReceiveInfo daoReceiveInfo = new JdbcReceiveInfo();
+        List<ReceiveInfo> expected = new ArrayList<>();
+        new JdbcPackageInfo().create(new PackageInfo("",""));
         int amount = 3;
         for(int i = 1; i <= amount; i++){
-            daoWorker.create(new Worker("Name" + i,"Surname"));
-            expected.add(new Worker(i,"Name" + i,"Surname"));
+            daoReceiveInfo.create(new ReceiveInfo(1,"",true));
+            expected.add(new ReceiveInfo(1,"",true));
         }
-        assertEquals(expected,daoWorker.findAll().get());
+        assertEquals(expected, daoReceiveInfo.findAll().get());
     }
 }

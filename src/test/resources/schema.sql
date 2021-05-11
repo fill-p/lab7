@@ -1,11 +1,11 @@
-create table if not exists worker(
+create table if not exists package_info(
     id SERIAL primary key,
-    name varchar(100) not null,
-    surname varchar(500) not null
+    sender varchar(100) not null,
+    receiver varchar(100) not null
 );
 
-create table if not exists presents(
-    worker_id int references worker(id) on delete cascade,
-    date varchar(100) not null ,
-    is_present boolean not null
+create table if not exists receive_info(
+    package_id int references package_info(id) on delete cascade,
+    receive_date varchar(100) not null ,
+    is_receive boolean not null
 );

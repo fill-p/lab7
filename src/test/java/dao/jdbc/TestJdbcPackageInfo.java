@@ -2,9 +2,9 @@ package dao.jdbc;
 
 import dao.DaoException;
 import dao.DaoFactory;
-import dao.DaoPresent;
-import data.Present;
-import data.Worker;
+import dao.DaoPackageInfo;
+import data.PackageInfo;
+import data.ReceiveInfo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestJdbcPresent {
+public class TestJdbcPackageInfo {
     private static final DaoFactory factory = DaoFactory.getInstance();
 
     @BeforeEach
@@ -82,38 +82,41 @@ public class TestJdbcPresent {
     }
 
     @Test
-    void shouldNotThrowExceptionForCreatingPresent() throws DaoException {
-        new JdbcWorker().create(new Worker("",""));
-        assertDoesNotThrow(() -> new JdbcPresent().create(new Present(1,"time",true)));
+    void shouldNotThrowExceptionForCreatingPackageInfo() throws DaoException {
+        assertDoesNotThrow(() -> new JdbcPackageInfo().create(new PackageInfo("","")));
     }
 
     @Test
-    void shouldThrowDaoExceptionForCreatingEmptyPresent() {
-        assertThrows(DaoException.class,() -> new JdbcPresent().create(new Present()));
+    void shouldThrowDaoExceptionForCreatingEmptyPackageInfo() {
+        assertThrows(DaoException.class,() -> new JdbcPackageInfo().create(new PackageInfo()));
     }
 
     @Test
-    void shouldThrowDaoExceptionForCreatingPresentWhenThereIsNoWorkers() {
-        assertThrows(DaoException.class,() -> new JdbcPresent().create(new Present(1,"time",true)));
+    void shouldNotThrowDaoExceptionForDeletingPackageInfo() throws DaoException {
+        new JdbcPackageInfo().create(new PackageInfo("",""));
+        assertDoesNotThrow(() -> new JdbcPackageInfo().delete(new PackageInfo(1,"","")));
     }
 
     @Test
-    void shouldNotThrowDaoExceptionForDeletingPresent() throws DaoException {
-        new JdbcWorker().create(new Worker("",""));
-        new JdbcPresent().create(new Present(1,"time",true));
-        assertDoesNotThrow(() -> new JdbcPresent().delete(new Present(1,"time",true)));
+    void shouldNotThrowDaoExceptionForUpdatingPackageInfoAndShowNewValue() throws DaoException {
+        new JdbcPackageInfo().create(new PackageInfo("",""));
+        System.out.println(new JdbcPackageInfo().findAll().get());
+        assertDoesNotThrow(() -> new JdbcPackageInfo().update(new PackageInfo(1,"New sender","New receiver")));
+        List<PackageInfo> expected = new ArrayList<>();
+        expected.add(new PackageInfo(1,"New sender","New receiver"));
+        assertEquals(expected,new JdbcPackageInfo().findAll().get());
     }
 
+
     @Test
-    void shouldShowAddedPresents() throws DaoException {
-        DaoPresent daoPresent = new JdbcPresent();
-        List<Present> expected = new ArrayList<>();
-        new JdbcWorker().create(new Worker("",""));
+    void shouldShowAddedPackageInfos() throws DaoException {
+        DaoPackageInfo daoPackageInfo = new JdbcPackageInfo();
+        List<PackageInfo> expected = new ArrayList<>();
         int amount = 3;
         for(int i = 1; i <= amount; i++){
-            daoPresent.create(new Present(1,"time",true));
-            expected.add(new Present(1,"time",true));
+            daoPackageInfo.create(new PackageInfo("",""));
+            expected.add(new PackageInfo(i,"",""));
         }
-        assertEquals(expected,daoPresent.findAll().get());
+        assertEquals(expected, daoPackageInfo.findAll().get());
     }
 }

@@ -6,11 +6,11 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class Worker {
+public class PackageInfo {
 
-    private long id;
+    private int id;
     @NonNull
-    private String name;
+    private String sender;
     @NonNull
-    private String surname;
+    private String receiver;
 }

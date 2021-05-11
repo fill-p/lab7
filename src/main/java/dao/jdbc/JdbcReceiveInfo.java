@@ -1,8 +1,8 @@
 package dao.jdbc;
 
 import dao.DaoFactory;
-import dao.DaoWorker;
-import data.Worker;
+import dao.DaoReceiveInfo;
+import data.ReceiveInfo;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,34 +14,35 @@ import java.util.Optional;
 
 import dao.DaoException;
 
-public class JdbcWorker implements DaoWorker {
+public class JdbcReceiveInfo implements DaoReceiveInfo {
 
     private final DaoFactory daoFactory = DaoFactory.getInstance();
 
-    private static final String CREATE_WORKER = "insert into worker(name,surname) values(?,?);";
+    private static final String CREATE_RECEIVE_INFO = "insert into receive_info(package_id,receive_date,is_receive) values(?,?,?);";
 
-    private static final String DELETE_WORKER = "delete from worker " +
-            "where id = ?;";
+    private static final String DELETE_RECEIVE_INFO = "delete from receive_info " +
+            "where package_id = ?;";
 
-    private static final String UPDATE_WORKER = "update worker set " +
-            "name = ?," +
-            "surname = ?" +
-            "where id = ?;";
+    private static final String UPDATE_RECEIVE_INFO = "update receive_info set " +
+            "receive_date = ?," +
+            "is_receive = ?" +
+            "where package_id = ?;";
 
-    private static final String FIND_WORKERS = "select * from worker;";
+    private static final String FIND_RECEIVE_INFO = "select * from receive_info;";
 
 
     @Override
-    public void create(Worker worker) throws DaoException {
+    public void create(ReceiveInfo receiveInfo) throws DaoException {
         Connection connection = null;
         PreparedStatement statement = null;
         try {
             connection = daoFactory.getConnection();
-            statement = connection.prepareStatement(CREATE_WORKER);
-            statement.setString(1, worker.getName());
-            statement.setString(2, worker.getSurname());
+            statement = connection.prepareStatement(CREATE_RECEIVE_INFO);
+            statement.setLong(1, receiveInfo.getPackageId());
+            statement.setString(2, receiveInfo.getReceiveDate());
+            statement.setBoolean(3,receiveInfo.isReceive());
             if(statement.execute()){
-                throw new DaoException("Worker was not created");
+                throw new DaoException("ReceiveInfo was not created");
             }
         } catch (DaoException | SQLException e){
             throw new DaoException(e.getMessage(),e);
@@ -60,15 +61,15 @@ public class JdbcWorker implements DaoWorker {
     }
 
     @Override
-    public void delete(Worker worker) throws DaoException {
+    public void delete(ReceiveInfo receiveInfo) throws DaoException {
         Connection connection = null;
         PreparedStatement statement = null;
         try {
             connection = daoFactory.getConnection();
-            statement = connection.prepareStatement(DELETE_WORKER);
-            statement.setLong(1, worker.getId());
+            statement = connection.prepareStatement(DELETE_RECEIVE_INFO);
+            statement.setLong(1, receiveInfo.getPackageId());
             if(statement.execute()){
-                throw new DaoException("Worker was not deleted");
+                throw new DaoException("ReceiveInfo was not deleted");
             }
         } catch (DaoException | SQLException e){
             throw new DaoException(e.getMessage(),e);
@@ -87,17 +88,17 @@ public class JdbcWorker implements DaoWorker {
     }
 
     @Override
-    public void update(Worker worker) throws DaoException {
+    public void update(ReceiveInfo receiveInfo) throws DaoException {
         Connection connection = null;
         PreparedStatement statement = null;
         try {
             connection = daoFactory.getConnection();
-            statement = connection.prepareStatement(UPDATE_WORKER);
-            statement.setString(1, worker.getName());
-            statement.setString(2, worker.getSurname());
-            statement.setLong(2, worker.getId());
-            if(!statement.execute()){
-                throw new DaoException("Worker was not updated");
+            statement = connection.prepareStatement(UPDATE_RECEIVE_INFO);
+            statement.setBoolean(2, receiveInfo.isReceive());
+            statement.setString(1, receiveInfo.getReceiveDate());
+            statement.setLong(3, receiveInfo.getPackageId());
+            if(statement.execute()){
+                throw new DaoException("ReceiveInfo was not updated");
             }
         } catch (DaoException | SQLException e){
             throw new DaoException(e.getMessage(),e);
@@ -116,14 +117,14 @@ public class JdbcWorker implements DaoWorker {
     }
 
     @Override
-    public Optional<List<Worker>> findAll() throws DaoException {
+    public Optional<List<ReceiveInfo>> findAll() throws DaoException {
         Connection connection = null;
         PreparedStatement statement = null;
-        List<Worker> workerList;
+        List<ReceiveInfo> receiveInfoList;
         try {
             connection = daoFactory.getConnection();
-            statement = connection.prepareStatement(FIND_WORKERS);
-            workerList = readDataFromResultSet(statement.executeQuery());
+            statement = connection.prepareStatement(FIND_RECEIVE_INFO);
+            receiveInfoList = readDataFromResultSet(statement.executeQuery());
         } catch (DaoException | SQLException e){
             throw new DaoException(e.getMessage(),e);
         } finally {
@@ -138,24 +139,24 @@ public class JdbcWorker implements DaoWorker {
                 throw new DaoException("Cannot close connection",e);
             }
         }
-        return Optional.of(workerList);
+        return Optional.of(receiveInfoList);
     }
 
 
 
-    private List<Worker> readDataFromResultSet(ResultSet resultSet) throws DaoException {
-        List<Worker> workerList = new ArrayList<>();
+    private List<ReceiveInfo> readDataFromResultSet(ResultSet resultSet) throws DaoException {
+        List<ReceiveInfo> receiveInfoList = new ArrayList<>();
         try {
             while(resultSet.next()){
-                workerList.add(new Worker(
-                        resultSet.getInt("id"),
-                        resultSet.getString("name"),
-                        resultSet.getString("surname")
+                receiveInfoList.add(new ReceiveInfo(
+                        resultSet.getInt("package_id"),
+                        resultSet.getString("receive_date"),
+                        resultSet.getBoolean("is_receive")
                 ));
             }
         } catch (SQLException e) {
             throw new DaoException("Reading from result set is failed",e);
         }
-        return workerList;
+        return receiveInfoList;
     }
 }
